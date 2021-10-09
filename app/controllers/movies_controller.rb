@@ -13,49 +13,34 @@ class MoviesController < ApplicationController
         @ratings_to_show = params[:ratings]
         session[:ratings] = params[:ratings]
     elsif params[:ratings] == nil && params[:commit] == "Refresh"
-        @ratings_to_show = nil
+        @ratings_to_show = Hash[@all_ratings.map {|rating| [rating,'1']}]
         session[:ratings] = nil
     elsif session[:ratings] != nil
-        redirect = true
         @ratings_to_show = session[:ratings]
-    else
-        @ratings_to_show = Hash.new
-        @all_ratings.each do |r|
-            @ratings_to_show[r] = 1
-        end
+        redirect = true
     end
     
     if params[:sort] != nil
         @sort = params[:sort]
         session[:sort] = params[:sort]
     elsif session[:sort] != nil
-        redirect = true
         @sort = session[:sort]
+        redirect = true
     else
         @sort = nil
     end
     
     if @sort == 'title'
-      @title_header = 'hilite'
+        @title_header = 'hilite'
     elsif @sort == 'release_date'
-      @release_date_header = 'hilite'
+        @release_date_header = 'hilite'
     end
 
-      
     if redirect
-        flash.keep
         redirect_to movies_path("ratings" => @ratings_to_show,"sort"=>@sort)
     end
-      
-    if @sort and @ratings_to_show
-      @movies = Movie.where(:rating => @ratings_to_show.keys).order(@sort)
-    elsif @ratings_to_show
-      @movies = Movie.where(:rating => @ratings_to_show.keys)
-    elsif @sort
-      @movies = Movie.all.order(@sort)
-    else
-      @movies = Movie.all
-    end  
+
+    @movies = Movie.where(:rating => @ratings_to_show.keys).order(@sort) 
   end
 
   def new
